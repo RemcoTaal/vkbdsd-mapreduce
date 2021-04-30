@@ -1,1 +1,1 @@
-# vkbdsd-assignment-2
+# vkbdsd-mapreduce
