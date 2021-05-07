@@ -1,6 +1,7 @@
 package org.apache.hadoop.examples;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.StringTokenizer;
 
 import org.apache.hadoop.conf.Configuration;
@@ -19,14 +20,25 @@ public class WordCount {
             extends Mapper<Object, Text, Text, IntWritable> {
 
         private final static IntWritable one = new IntWritable(1);
-        private final Text word = new Text();
+        private final Text bigram = new Text();
+        private final Text totalPair = new Text();
 
         public void map(Object key, Text value, Context context
         ) throws IOException, InterruptedException {
             StringTokenizer itr = new StringTokenizer(value.toString());
             while (itr.hasMoreTokens()) {
-                word.set(itr.nextToken());
-                context.write(word, one);
+                //String[] characters = itr.nextToken().split("");
+                String line = itr.nextToken().toLowerCase(Locale.ROOT);
+                //Bidirectional
+                int n = 2;
+                for(int i = 0; i < line.length() - n + 1; i++){
+                    String pair = line.substring(i, i + n);
+                    String startingChar = pair.substring(0, 1);
+                    this.bigram.set(pair);
+                    totalPair.set(startingChar);
+                    context.write(this.bigram, one);
+                    context.write(totalPair, one);
+                }
             }
         }
     }
