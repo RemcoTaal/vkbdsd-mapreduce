@@ -6,10 +6,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
+
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 public class MaximumEntropyCalculator {
@@ -58,22 +59,22 @@ public class MaximumEntropyCalculator {
             hdfs.delete(probabilityOutputDir, true);
         }
 
-        Job probabilityCalculatorJob = new Job(conf, "Calculating the probability of a certain pair");
-        probabilityCalculatorJob.setJarByClass(MaximumEntropyCalculator.class);
-        MultipleInputs.addInputPath(probabilityCalculatorJob, frequencyOutputDir, TextInputFormat.class, PairFrequencyMapper.class);
-        MultipleInputs.addInputPath(probabilityCalculatorJob, totalOutputDir, TextInputFormat.class, TotalFrequencyMapper.class);
-
-        FileOutputFormat.setOutputPath(probabilityCalculatorJob, probabilityOutputDir);
+        // JOB TO CALCULATE THE PERCENTAGES BIGRAMS PER TOTAL FIRST LETTER COUNT
+        Job job3 = new Job(conf, "calculatePercentages");
+        job3.setJarByClass(MaximumEntropyCalculator.class);
+        FileOutputFormat.setOutputPath(job3, probabilityOutputDir);
 
 
-//        probabilityCalculatorJob.setCombinerClass(PairProbabilityReducer.class);
-//        probabilityCalculatorJob.setReducerClass(PairProbabilityReducer.class);
-//        probabilityCalculatorJob.setNumReduceTasks(1);
+        job3.setMapperClass(PairProbabilityMapper.class);
+        job3.setReducerClass(PairProbabilityReducer.class);
 
-        probabilityCalculatorJob.setOutputKeyClass(Text.class);
-        probabilityCalculatorJob.setOutputValueClass(IntWritable.class);
-        System.exit(probabilityCalculatorJob.waitForCompletion(true) ? 0 : 1);
+        job3.setOutputKeyClass(Text.class);
+        job3.setOutputValueClass(CompositeWritable.class);
 
+        SequenceFileInputFormat.setInputPaths(job3, frequencyOutputDir, totalOutputDir);
+        job3.setInputFormatClass(TextInputFormat.class);
+
+        System.exit( job3.waitForCompletion(true) ? 0 : 1);
 
 
 

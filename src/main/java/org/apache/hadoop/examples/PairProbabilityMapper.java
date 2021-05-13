@@ -1,39 +1,55 @@
 package org.apache.hadoop.examples;
 
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import java.io.IOException;
-import java.util.Locale;
-import java.util.StringTokenizer;
+import java.util.HashMap;
 
 
 public class PairProbabilityMapper
-        extends Mapper<Object, Text, Text, IntWritable> {
+        extends Mapper<Object, Text, Text, CompositeWritable> {
 
-    private final static IntWritable one = new IntWritable(1);
-    private final Text bigram = new Text();
+    private static HashMap<String, Double> totalMap = new HashMap();
+    private static HashMap<String, Double> frequencyMap = new HashMap();
+
 
     public void map(Object key, Text value, Context context
     ) throws IOException, InterruptedException {
-        StringTokenizer itr = new StringTokenizer(value.toString());
-        while (itr.hasMoreTokens()) {
 
-            //String[] characters = itr.nextToken().split("");
-            String word = itr.nextToken().toLowerCase(Locale.ROOT);
-            String filteredWord = new String();
-            filteredWord = word.replaceAll("[^a-zA-Z ]", "*");
-            filteredWord += new String(" ");
+        String[] array = value.toString().split("\t");
+        String mapKey = array[0];
+        Integer mapValue = Integer.parseInt(array[1]);
 
-            //Bidirectional
-            int n = 2;
-            for(int i = 0; i < filteredWord.length() - n + 1; i++){
-
-                String pair = filteredWord.substring(i, i + n);
-                this.bigram.set(pair);
-                context.write(this.bigram, one);
-            }
+        if (mapKey.length() == 1) {
+            totalMap.put(mapKey, Double.parseDouble(mapValue.toString()));
+        } else if (mapKey.length() == 2) {
+            frequencyMap.put(mapKey, Double.parseDouble(mapValue.toString()));
         }
+
+        //Double probability = new Double();
+
+
+        frequencyMap.forEach((k, v) -> {
+            String firstChar = Character.toString(k.charAt(0));
+            if (totalMap.containsKey(firstChar)) {
+
+                Double totalForFrequency = totalMap.get(firstChar);
+                Double probability = new Double(v / totalForFrequency);
+
+                try {
+                    context.write(new Text(k), new CompositeWritable(v, probability));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+        });
+
+
     }
 }
