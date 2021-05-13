@@ -14,11 +14,12 @@ import java.io.IOException;
 
         public void map(LongWritable key, Text value, Context context
         ) throws IOException, InterruptedException {
-            String[] stringArray = value.toString().split(" |\t");
-            Text firstChar = new Text (stringArray[0].substring(0, 1));
+            String[] stringArray = value.toString().split("\t");
+            Text firstCharOfPair = new Text(stringArray[0].substring(0, 1));
+
             IntWritable frequency = new IntWritable(Integer.parseInt(stringArray[stringArray.length -1].replaceAll("[^0-9]", "")));
 
-            context.write(firstChar, frequency);
+            context.write(firstCharOfPair, frequency);
 
         }
     }
