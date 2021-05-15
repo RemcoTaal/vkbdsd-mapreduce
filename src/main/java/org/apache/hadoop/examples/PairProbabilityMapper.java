@@ -1,9 +1,7 @@
 package org.apache.hadoop.examples;
 
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -28,21 +26,17 @@ public class PairProbabilityMapper
             frequencyMap.put(mapKey, Double.parseDouble(mapValue.toString()));
         }
 
-        //Double probability = new Double();
-
 
         frequencyMap.forEach((k, v) -> {
             String firstChar = Character.toString(k.charAt(0));
             if (totalMap.containsKey(firstChar)) {
 
                 Double totalForFrequency = totalMap.get(firstChar);
-                Double probability = new Double(v / totalForFrequency);
+                Double probability = v / totalForFrequency;
 
                 try {
                     context.write(new Text(k), new CompositeWritable(v, probability));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
+                } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
                 }
 
