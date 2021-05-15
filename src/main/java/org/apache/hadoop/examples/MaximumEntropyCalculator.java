@@ -17,6 +17,7 @@ public class MaximumEntropyCalculator {
         Configuration conf = new Configuration();
         FileSystem hdfs = FileSystem.get(conf);
 
+
         Path dutchInputDir = new Path("input/inputDutch");
         Path dutchPairFrequencyOutputDir = new Path("output/outputPairFrequencyDutch");
         Path dutchLetterTotalOutputDir = new Path("output/outputLetterTotalDutch");
@@ -28,9 +29,46 @@ public class MaximumEntropyCalculator {
         Path englishProbabilityOutputDir = new Path("output/outputProbabilityEnglish");
 
         Path unclassifiedInputDir = new Path("input/inputUnclassified");
+        Path classifiedOutputDir = new Path("output/outputClassified");
 
-        if (hdfs.exists(dutchPairFrequencyOutputDir)) {
-            hdfs.delete(dutchPairFrequencyOutputDir, true);
+        // calculating the probability for dutch text
+        calculateProbability(dutchInputDir, dutchPairFrequencyOutputDir, dutchLetterTotalOutputDir, dutchProbabilityOutputDir, conf, hdfs);
+
+        // calculating the probability for english text
+        calculateProbability(englishInputDir, englishPairFrequencyOutputDir, englishLetterTotalOutputDir, englishProbabilityOutputDir, conf, hdfs);
+
+
+        if (hdfs.exists(classifiedOutputDir)) {
+            hdfs.delete(classifiedOutputDir, true);
+        }
+
+        // Job for classifying the language of every sentence in a input text
+        // TODO mapper en reducer van deze job zijn slechts een copy paste, ik heb nog geen logica toegevoegd
+        Job job = Job.getInstance(conf, "Classify every sentence for a unclassified Text");
+        job.setJarByClass(MaximumEntropyCalculator.class);
+        job.setMapperClass(LanguageClassifierMapper.class);
+        job.setCombinerClass(LanguageClassifierReducer.class);
+        job.setReducerClass(LanguageClassifierReducer.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+
+        SequenceFileInputFormat.setInputPaths(job, unclassifiedInputDir, dutchProbabilityOutputDir, englishProbabilityOutputDir);
+        FileOutputFormat.setOutputPath(job, classifiedOutputDir);
+
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+
+    private static void calculateProbability(
+            Path inputDir,
+            Path pairFrequencyOutputDir,
+            Path letterTotalOutputDir,
+            Path probabilityOutputDir,
+            Configuration conf,
+            FileSystem hdfs
+    ) throws Exception {
+
+        if (hdfs.exists(pairFrequencyOutputDir)) {
+            hdfs.delete(pairFrequencyOutputDir, true);
         }
 
         Job job = Job.getInstance(conf, "dutch pair frequency");
@@ -40,12 +78,12 @@ public class MaximumEntropyCalculator {
         job.setReducerClass(PairFrequencyReducer.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
-        FileInputFormat.addInputPath(job, dutchInputDir);
-        FileOutputFormat.setOutputPath(job, dutchPairFrequencyOutputDir);
+        FileInputFormat.addInputPath(job, inputDir);
+        FileOutputFormat.setOutputPath(job, pairFrequencyOutputDir);
         job.waitForCompletion(true);
 
-        if (hdfs.exists(dutchLetterTotalOutputDir)) {
-            hdfs.delete(dutchLetterTotalOutputDir, true);
+        if (hdfs.exists(letterTotalOutputDir)) {
+            hdfs.delete(letterTotalOutputDir, true);
         }
 
         Job job2 = Job.getInstance(conf, "dutch count totals for letter");
@@ -55,83 +93,28 @@ public class MaximumEntropyCalculator {
         job2.setReducerClass(TotalFrequencyReducer.class);
         job2.setOutputKeyClass(Text.class);
         job2.setOutputValueClass(IntWritable.class);
-        FileInputFormat.addInputPath(job2, dutchPairFrequencyOutputDir);
-        FileOutputFormat.setOutputPath(job2, dutchLetterTotalOutputDir);
+        FileInputFormat.addInputPath(job2, pairFrequencyOutputDir);
+        FileOutputFormat.setOutputPath(job2, pairFrequencyOutputDir);
         job2.waitForCompletion(true);
 
-        if (hdfs.exists(dutchProbabilityOutputDir)) {
-            hdfs.delete(dutchProbabilityOutputDir, true);
+        if (hdfs.exists(probabilityOutputDir)) {
+            hdfs.delete(probabilityOutputDir, true);
         }
 
         // JOB TO CALCULATE THE PROBABILITY BIGRAMS PER TOTAL FIRST LETTER COUNT
         Job job3 = new Job(conf, "dutch calculate probability");
         job3.setJarByClass(MaximumEntropyCalculator.class);
-        FileOutputFormat.setOutputPath(job3, dutchProbabilityOutputDir);
-
-
         job3.setMapperClass(PairProbabilityMapper.class);
         job3.setReducerClass(PairProbabilityReducer.class);
-
         job3.setOutputKeyClass(Text.class);
         job3.setOutputValueClass(CompositeWritable.class);
-
-        SequenceFileInputFormat.setInputPaths(job3, dutchPairFrequencyOutputDir, dutchLetterTotalOutputDir);
         job3.setInputFormatClass(TextInputFormat.class);
 
+        SequenceFileInputFormat.setInputPaths(job3, pairFrequencyOutputDir, letterTotalOutputDir);
+        FileOutputFormat.setOutputPath(job3, probabilityOutputDir);
         job3.waitForCompletion(true);
 
-        if (hdfs.exists(englishPairFrequencyOutputDir)) {
-            hdfs.delete(englishPairFrequencyOutputDir, true);
-        }
 
-        Job job4 = Job.getInstance(conf, "english pair frequency");
-        job4.setJarByClass(MaximumEntropyCalculator.class);
-        job4.setMapperClass(PairFrequencyMapper.class);
-        job4.setCombinerClass(PairFrequencyReducer.class);
-        job4.setReducerClass(PairFrequencyReducer.class);
-        job4.setOutputKeyClass(Text.class);
-        job4.setOutputValueClass(IntWritable.class);
-        FileInputFormat.addInputPath(job4, englishInputDir);
-        FileOutputFormat.setOutputPath(job4, englishPairFrequencyOutputDir);
-        job4.waitForCompletion(true);
-
-        if (hdfs.exists(englishLetterTotalOutputDir)) {
-            hdfs.delete(englishLetterTotalOutputDir, true);
-        }
-
-        Job job5 = Job.getInstance(conf, "english count totals for letter");
-        job5.setJarByClass(MaximumEntropyCalculator.class);
-        job5.setMapperClass(TotalFrequencyMapper.class);
-        job5.setCombinerClass(TotalFrequencyReducer.class);
-        job5.setReducerClass(TotalFrequencyReducer.class);
-        job5.setOutputKeyClass(Text.class);
-        job5.setOutputValueClass(IntWritable.class);
-        FileInputFormat.addInputPath(job5, englishPairFrequencyOutputDir);
-        FileOutputFormat.setOutputPath(job5, englishLetterTotalOutputDir);
-        job5.waitForCompletion(true);
-
-        if (hdfs.exists(englishProbabilityOutputDir)) {
-            hdfs.delete(englishProbabilityOutputDir, true);
-        }
-
-        // JOB TO CALCULATE THE PROBABILITY BIGRAMS PER TOTAL FIRST LETTER COUNT
-        Job job6 = new Job(conf, "english calculate probability");
-        job6.setJarByClass(MaximumEntropyCalculator.class);
-        FileOutputFormat.setOutputPath(job6, englishProbabilityOutputDir);
-
-
-        job6.setMapperClass(PairProbabilityMapper.class);
-        job6.setReducerClass(PairProbabilityReducer.class);
-
-        job6.setOutputKeyClass(Text.class);
-        job6.setOutputValueClass(CompositeWritable.class);
-
-        SequenceFileInputFormat.setInputPaths(job6, englishPairFrequencyOutputDir, englishLetterTotalOutputDir);
-        job6.setInputFormatClass(TextInputFormat.class);
-
-        System.exit(job6.waitForCompletion(true) ? 0 : 1);
-
-        // Hier moet een job komen die ongeclassificeerde text als input neemt daar een probability van berekent en vervolgends de output/probability van nederlandse en engelse texten vergelijkt om tot een classificatie te komen
 
     }
 }
