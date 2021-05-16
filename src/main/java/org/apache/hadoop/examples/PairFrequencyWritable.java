@@ -6,38 +6,37 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class CompositeWritable implements Writable {
+public class PairFrequencyWritable implements Writable {
+    String pair = "";
     double frequency = 0.0;
-    double probability = 0.0;
 
-
-    public CompositeWritable() {
+    public PairFrequencyWritable() {
     }
 
-    public CompositeWritable(double frequency, double probability) {
+    public PairFrequencyWritable(String pair, double frequency) {
+        this.pair = pair;
         this.frequency = frequency;
-        this.probability = probability;
     }
 
     @Override
     public void readFields(DataInput in) throws IOException {
+        pair = in.readUTF();
         frequency = in.readDouble();
-        probability = in.readDouble();
     }
 
     @Override
     public void write(DataOutput out) throws IOException {
+        out.writeUTF(pair);
         out.writeDouble(frequency);
-        out.writeDouble(probability);
     }
 
-    public void merge(CompositeWritable other) {
+    public void merge(PairFrequencyWritable other) {
+        this.pair = other.pair;
         this.frequency = other.frequency;
-        this.probability = other.probability;
     }
 
     @Override
     public String toString() {
-        return this.frequency + "\t" + this.probability;
+        return this.frequency + "\t" + this.pair;
     }
 }

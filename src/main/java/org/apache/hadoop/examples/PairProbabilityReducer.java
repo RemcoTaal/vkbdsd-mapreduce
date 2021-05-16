@@ -1,21 +1,20 @@
 package org.apache.hadoop.examples;
 
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
 
 public class PairProbabilityReducer
-        extends Reducer<Text, CompositeWritable, Text, CompositeWritable> {
+        extends Reducer<Text, FrequencyProbabilityWritable, Text, FrequencyProbabilityWritable> {
 
 
-    public void reduce(Text key, Iterable<CompositeWritable> values,
+    public void reduce(Text key, Iterable<FrequencyProbabilityWritable> values,
                        Context context
     ) throws IOException, InterruptedException {
-        CompositeWritable out = new CompositeWritable();
+        FrequencyProbabilityWritable out = new FrequencyProbabilityWritable();
 
-        for (CompositeWritable next : values)
+        for (FrequencyProbabilityWritable next : values)
         {
             out.merge(next);
         }
