@@ -1,7 +1,7 @@
-package org.apache.hadoop.examples.reducers;
+package reducers;
 
-import org.apache.hadoop.examples.writables.MyMapWritable;
-import org.apache.hadoop.examples.writables.StringDoubleWritable;
+import writables.MyMapWritable;
+import writables.StringDoubleWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -34,7 +34,7 @@ public class SentencePairFrequencyReducer extends Reducer<IntWritable, StringDou
             }
         }
 
-
+        // Write the lineCount with a map containing all the bigrams with the correct amount of frequencies for the line
         context.write(new Text(key.toString()), pairFrequencyMap);
     }
 }

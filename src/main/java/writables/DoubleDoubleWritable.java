@@ -1,4 +1,4 @@
-package org.apache.hadoop.examples.writables;
+package writables;
 
 import org.apache.hadoop.io.Writable;
 

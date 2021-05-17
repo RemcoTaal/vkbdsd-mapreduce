@@ -1,6 +1,6 @@
-package org.apache.hadoop.examples.mappers;
+package mappers;
 
-import org.apache.hadoop.examples.writables.DoubleDoubleWritable;
+import writables.DoubleDoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 

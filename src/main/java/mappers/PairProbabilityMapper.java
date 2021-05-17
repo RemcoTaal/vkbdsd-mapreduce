@@ -1,6 +1,6 @@
-package org.apache.hadoop.examples.mappers;
+package mappers;
 
-import org.apache.hadoop.examples.writables.DoubleDoubleWritable;
+import writables.DoubleDoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
@@ -8,10 +8,11 @@ import java.io.IOException;
 import java.util.HashMap;
 
 
-public class PairProbabilityMapper
-        extends Mapper<Object, Text, Text, DoubleDoubleWritable> {
+public class PairProbabilityMapper extends Mapper<Object, Text, Text, DoubleDoubleWritable> {
 
+    // Contains the key letter and total amount for the letter
     private static HashMap<String, Double> totalMap = new HashMap();
+    // Contains the bigram and the frequency of the bigram
     private static HashMap<String, Double> frequencyMap = new HashMap();
 
     public static void clearMaps() {
@@ -32,19 +33,19 @@ public class PairProbabilityMapper
         }
 
 
-        frequencyMap.forEach((k, v) -> {
-            String firstChar = Character.toString(k.charAt(0));
-            if (totalMap.containsKey(firstChar)) {
+        // For each value in the frequencyMap write a record with bigram, frequency probability
+        frequencyMap.forEach((bigram, frequency) -> {
+            String firstChar = Character.toString(bigram.charAt(0));
 
-                double totalForFrequency = totalMap.get(firstChar);
-                double probability = v / totalForFrequency;
+            if (totalMap.containsKey(firstChar)) {
+                double totalForLetter = totalMap.get(firstChar);
+                double probability = frequency / totalForLetter;
 
                 try {
-                    context.write(new Text(k), new DoubleDoubleWritable(v, probability));
+                    context.write(new Text(bigram), new DoubleDoubleWritable(frequency, probability));
                 } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
                 }
-
             }
 
         });

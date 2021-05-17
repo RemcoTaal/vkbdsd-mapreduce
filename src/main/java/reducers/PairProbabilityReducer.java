@@ -1,6 +1,6 @@
-package org.apache.hadoop.examples.reducers;
+package reducers;
 
-import org.apache.hadoop.examples.writables.DoubleDoubleWritable;
+import writables.DoubleDoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 

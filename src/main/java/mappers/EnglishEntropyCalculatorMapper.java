@@ -1,4 +1,4 @@
-package org.apache.hadoop.examples.mappers;
+package mappers;
 
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
@@ -9,17 +9,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class DutchEntropyCalculatorMapper
-        extends Mapper<Object, Text, Text, DoubleWritable> {
+public class EnglishEntropyCalculatorMapper extends Mapper<Object, Text, Text, DoubleWritable> {
 
+    // Contains <bigram, probability>
     private static HashMap<String, Double> probabilityMap = new HashMap();
+    // Contains <rownumber of inputText, <bigram, probability>>
     private static HashMap<String, HashMap<String, Double>> unclassifiedMap = new HashMap();
 
     public void map(Object key, Text value, Context context
     ) throws IOException, InterruptedException {
 
         double entropyTotal = 0.0;
-
 
         // Check if the values come from the probability file and put the bigram and probability in a map
         if (context.getInputSplit().toString().contains("Probability")) {
@@ -36,7 +36,7 @@ public class DutchEntropyCalculatorMapper
             String[] bigramFrequencies = sentenceFrequencies[1].split(",");
             HashMap<String, Double> bigramFrequenciesMap = new HashMap<>();
 
-            // create a new map which contains all the bigrams + frequencies for a certain row
+            // Create a new map which contains all the bigrams + frequencies for a certain row
             for (String bigramFrequency : bigramFrequencies) {
                 String[] bigramFrequencyArray = bigramFrequency.split(" = ");
                 String bigram = bigramFrequencyArray[0];
@@ -48,23 +48,27 @@ public class DutchEntropyCalculatorMapper
             unclassifiedMap.put(sentenceNumber, bigramFrequenciesMap);
         }
 
-        // If the mapsize equals the correct size for the dutch probability
-        if (probabilityMap.size() == 641) {
 
-            
-            for (Map.Entry<String, HashMap<String, Double>> entry : unclassifiedMap.entrySet()) {
-                for (Map.Entry<String, Double> hashmapEntry : entry.getValue().entrySet()) {
+        // If the mapsize equals the correct size according to the english probability
+        if (probabilityMap.size() == 418) {
 
-                    if (probabilityMap.containsKey(hashmapEntry.getKey())) {
+            // For every row in the unclassified map
+            for (Map.Entry<String, HashMap<String, Double>> record : unclassifiedMap.entrySet()) {
+                // For every record in the bigram, frequency map
+                for (Map.Entry<String, Double> bigramFrequencyRecord : record.getValue().entrySet()) {
 
-                        double probability = probabilityMap.get(hashmapEntry.getKey());
-                        double entropy = hashmapEntry.getValue() * probability;
+                    // If the probabilityMap contains a record with the key "bigram" calculate the entropy for the row
+                    if (probabilityMap.containsKey(bigramFrequencyRecord.getKey())) {
+                        double probability = probabilityMap.get(bigramFrequencyRecord.getKey());
+                        double entropy = bigramFrequencyRecord.getValue() * probability;
                         entropyTotal += entropy;
                     }
                 }
 
+                // Write the row number of inputText and the dutch entropy value
+                context.write(new Text(record.getKey()), new DoubleWritable(entropyTotal));
 
-                context.write(new Text(entry.getKey()), new DoubleWritable(entropyTotal));
+                // Reset the entropy value for the next row
                 entropyTotal = 0;
 
             }

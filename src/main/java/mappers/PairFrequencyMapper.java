@@ -1,4 +1,4 @@
-package org.apache.hadoop.examples.mappers;
+package mappers;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -13,24 +13,26 @@ public class PairFrequencyMapper
         extends Mapper<Object, Text, Text, IntWritable> {
 
     private final static IntWritable one = new IntWritable(1);
-    private final Text bigram = new Text();
 
     public void map(Object key, Text value, Context context
     ) throws IOException, InterruptedException {
         StringTokenizer itr = new StringTokenizer(value.toString());
+
+        // Loop through all words
         while (itr.hasMoreTokens()) {
-
+            String filteredWord;
             String word = itr.nextToken().toLowerCase(Locale.ROOT);
-            String filteredWord = new String();
+
+            // Remove all special characters from the word and replace them with *
             filteredWord = word.replaceAll("[^a-zA-Z ]", "*");
-            filteredWord += new String(" ");
+            // Add a space at the end of every word to also introduce end of the word in the bigrams
+            filteredWord += " ";
 
-            int n = 2;
-            for (int i = 0; i < filteredWord.length() - n + 1; i++) {
 
-                String pair = filteredWord.substring(i, i + n);
-                this.bigram.set(pair);
-                context.write(this.bigram, one);
+            // Write every character bigram from a word to the context with value 1
+            for (int i = 0; i < filteredWord.length() - 1; i++) {
+                Text bigram = new Text(filteredWord.substring(i, i + 2));
+                context.write(bigram, one);
             }
         }
     }

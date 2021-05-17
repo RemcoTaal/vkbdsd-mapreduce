@@ -1,4 +1,4 @@
-package org.apache.hadoop.examples.reducers;
+package reducers;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;

@@ -1,10 +1,8 @@
-package org.apache.hadoop.examples;
-
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.examples.mappers.*;
-import org.apache.hadoop.examples.reducers.*;
-import org.apache.hadoop.examples.writables.DoubleDoubleWritable;
-import org.apache.hadoop.examples.writables.StringDoubleWritable;
+import mappers.*;
+import reducers.*;
+import writables.DoubleDoubleWritable;
+import writables.StringDoubleWritable;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
@@ -44,10 +42,10 @@ public class DutchEnglishSentenceClassifier {
         Path classifiedOutputDir = new Path("output/outputClassified");
         Path combinedEntropyOutputDir = new Path("output/combinedEntropy");
 
-        // calculating the probability for dutch text
+        // Calculating the probability for dutch text
         calculateProbability(dutchInputDir, dutchPairFrequencyOutputDir, dutchLetterTotalOutputDir, dutchProbabilityOutputDir, conf, hdfs);
 
-        // calculating the probability for english text
+        // Calculating the probability for english text
         calculateProbability(englishInputDir, englishPairFrequencyOutputDir, englishLetterTotalOutputDir, englishProbabilityOutputDir, conf, hdfs);
 
         // Job for generating the bigram frequencies of every row in the unclassified text
@@ -138,11 +136,12 @@ public class DutchEnglishSentenceClassifier {
             FileSystem hdfs
     ) throws Exception {
 
+        // Job for getting the frequency of all bigrams
         if (hdfs.exists(pairFrequencyOutputDir)) {
             hdfs.delete(pairFrequencyOutputDir, true);
         }
 
-        Job job = Job.getInstance(conf, "dutch pair frequency");
+        Job job = Job.getInstance(conf, "Generate bigram frequencies");
         job.setJarByClass(DutchEnglishSentenceClassifier.class);
         job.setMapperClass(PairFrequencyMapper.class);
         job.setCombinerClass(SumReducer.class);
@@ -153,11 +152,12 @@ public class DutchEnglishSentenceClassifier {
         FileOutputFormat.setOutputPath(job, pairFrequencyOutputDir);
         job.waitForCompletion(true);
 
+        // Job for getting the total amount of every character
         if (hdfs.exists(letterTotalOutputDir)) {
             hdfs.delete(letterTotalOutputDir, true);
         }
 
-        Job job2 = Job.getInstance(conf, "dutch count totals for letter");
+        Job job2 = Job.getInstance(conf, "Generate total amount for every character");
         job2.setJarByClass(DutchEnglishSentenceClassifier.class);
         job2.setMapperClass(TotalFrequencyMapper.class);
         job2.setCombinerClass(SumReducer.class);
@@ -168,25 +168,23 @@ public class DutchEnglishSentenceClassifier {
         FileOutputFormat.setOutputPath(job2, letterTotalOutputDir);
         job2.waitForCompletion(true);
 
+        // Job to calculate the probability for the bigrams
         if (hdfs.exists(probabilityOutputDir)) {
             hdfs.delete(probabilityOutputDir, true);
         }
 
-        // JOB TO CALCULATE THE PROBABILITY BIGRAMS PER TOTAL FIRST LETTER COUNT
-        Job job3 = new Job(conf, "dutch calculate probability");
+        Job job3 = new Job(conf, "Calculate the probability");
         job3.setJarByClass(DutchEnglishSentenceClassifier.class);
         job3.setMapperClass(PairProbabilityMapper.class);
         job3.setReducerClass(PairProbabilityReducer.class);
         job3.setOutputKeyClass(Text.class);
         job3.setOutputValueClass(DoubleDoubleWritable.class);
         job3.setInputFormatClass(TextInputFormat.class);
-
         SequenceFileInputFormat.setInputPaths(job3, pairFrequencyOutputDir, letterTotalOutputDir);
         FileOutputFormat.setOutputPath(job3, probabilityOutputDir);
         job3.waitForCompletion(true);
 
+        // Resetting the static maps
         PairProbabilityMapper.clearMaps();
-
-
     }
 }
