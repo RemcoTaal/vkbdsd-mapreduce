@@ -19,17 +19,16 @@ public class PairProbabilityMapper
         frequencyMap.clear();
     }
 
-    public void map(Object key, Text value, Context context
-    ) throws IOException, InterruptedException {
+    public void map(Object key, Text value, Context context) {
 
         String[] array = value.toString().split("\t");
         String mapKey = array[0];
-        Integer mapValue = Integer.parseInt(array[1]);
+        double mapValue = Double.parseDouble(array[1]);
 
         if (mapKey.length() == 1) {
-            totalMap.put(mapKey, Double.parseDouble(mapValue.toString()));
+            totalMap.put(mapKey, mapValue);
         } else if (mapKey.length() == 2) {
-            frequencyMap.put(mapKey, Double.parseDouble(mapValue.toString()));
+            frequencyMap.put(mapKey, mapValue);
         }
 
 
@@ -37,8 +36,8 @@ public class PairProbabilityMapper
             String firstChar = Character.toString(k.charAt(0));
             if (totalMap.containsKey(firstChar)) {
 
-                Double totalForFrequency = totalMap.get(firstChar);
-                Double probability = v / totalForFrequency;
+                double totalForFrequency = totalMap.get(firstChar);
+                double probability = v / totalForFrequency;
 
                 try {
                     context.write(new Text(k), new DoubleDoubleWritable(v, probability));

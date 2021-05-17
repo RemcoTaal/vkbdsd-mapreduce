@@ -120,8 +120,8 @@ public class DutchEnglishSentenceClassifier {
         Job job5 = Job.getInstance(conf, "Classify every sentence for a unclassified Text");
         job5.setJarByClass(DutchEnglishSentenceClassifier.class);
         job5.setMapperClass(LanguageClassifierMapper.class);
-        job5.setCombinerClass(LanguageClassifierReducer.class);
-        job5.setReducerClass(LanguageClassifierReducer.class);
+        job5.setCombinerClass(SumReducer.class);
+        job5.setReducerClass(SumReducer.class);
         job5.setOutputKeyClass(Text.class);
         job5.setOutputValueClass(IntWritable.class);
         SequenceFileInputFormat.setInputPaths(job5, combinedEntropyOutputDir);
@@ -145,8 +145,8 @@ public class DutchEnglishSentenceClassifier {
         Job job = Job.getInstance(conf, "dutch pair frequency");
         job.setJarByClass(DutchEnglishSentenceClassifier.class);
         job.setMapperClass(PairFrequencyMapper.class);
-        job.setCombinerClass(PairFrequencyReducer.class);
-        job.setReducerClass(PairFrequencyReducer.class);
+        job.setCombinerClass(SumReducer.class);
+        job.setReducerClass(SumReducer.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
         FileInputFormat.addInputPath(job, inputDir);
@@ -160,8 +160,8 @@ public class DutchEnglishSentenceClassifier {
         Job job2 = Job.getInstance(conf, "dutch count totals for letter");
         job2.setJarByClass(DutchEnglishSentenceClassifier.class);
         job2.setMapperClass(TotalFrequencyMapper.class);
-        job2.setCombinerClass(TotalFrequencyReducer.class);
-        job2.setReducerClass(TotalFrequencyReducer.class);
+        job2.setCombinerClass(SumReducer.class);
+        job2.setReducerClass(SumReducer.class);
         job2.setOutputKeyClass(Text.class);
         job2.setOutputValueClass(IntWritable.class);
         FileInputFormat.addInputPath(job2, pairFrequencyOutputDir);
