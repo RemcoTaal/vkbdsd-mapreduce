@@ -12,7 +12,7 @@ class MyMapWritable extends MapWritable {
         Set<Writable> keySet = this.keySet();
 
         for (Object key : keySet) {
-            result.append("{" + key.toString() + " = " + this.get(key) + "}");
+            result.append(key.toString() + " = " + this.get(key) + ",");
         }
         return result.toString();
     }

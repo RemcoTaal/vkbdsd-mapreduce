@@ -11,7 +11,7 @@ import java.util.StringTokenizer;
 
 
 public class SentencePairFrequencyMapper
-        extends Mapper<Object, Text, IntWritable, PairFrequencyWritable> {
+        extends Mapper<Object, Text, IntWritable, StringDoubleWritable> {
 
     private int sentenceCount = 0;
 
@@ -30,7 +30,7 @@ public class SentencePairFrequencyMapper
             for(int i = 0; i < filteredSentence.length() - n + 1; i++){
 
                 String pair = filteredSentence.substring(i, i + n);
-                context.write(new IntWritable(sentenceCount), new PairFrequencyWritable(pair, 1.0));
+                context.write(new IntWritable(sentenceCount), new StringDoubleWritable(pair, 1.0));
             }
             sentenceCount ++;
         }

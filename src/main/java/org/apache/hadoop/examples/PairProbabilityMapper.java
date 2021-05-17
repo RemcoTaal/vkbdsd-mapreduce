@@ -7,10 +7,15 @@ import java.util.HashMap;
 
 
 public class PairProbabilityMapper
-        extends Mapper<Object, Text, Text, FrequencyProbabilityWritable> {
+        extends Mapper<Object, Text, Text, DoubleDoubleWritable> {
 
     private static HashMap<String, Double> totalMap = new HashMap();
     private static HashMap<String, Double> frequencyMap = new HashMap();
+
+    public static void clearMaps(){
+        totalMap.clear();
+        frequencyMap.clear();
+    }
 
 
     public void map(Object key, Text value, Context context
@@ -35,7 +40,7 @@ public class PairProbabilityMapper
                 Double probability = v / totalForFrequency;
 
                 try {
-                    context.write(new Text(k), new FrequencyProbabilityWritable(v, probability));
+                    context.write(new Text(k), new DoubleDoubleWritable(v, probability));
                 } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
                 }

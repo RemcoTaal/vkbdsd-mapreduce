@@ -6,15 +6,15 @@ import org.apache.hadoop.mapreduce.Reducer;
 import java.io.IOException;
 
 public class PairProbabilityReducer
-        extends Reducer<Text, FrequencyProbabilityWritable, Text, FrequencyProbabilityWritable> {
+        extends Reducer<Text, DoubleDoubleWritable, Text, DoubleDoubleWritable> {
 
 
-    public void reduce(Text key, Iterable<FrequencyProbabilityWritable> values,
+    public void reduce(Text key, Iterable<DoubleDoubleWritable> values,
                        Context context
     ) throws IOException, InterruptedException {
-        FrequencyProbabilityWritable out = new FrequencyProbabilityWritable();
+        DoubleDoubleWritable out = new DoubleDoubleWritable();
 
-        for (FrequencyProbabilityWritable next : values)
+        for (DoubleDoubleWritable next : values)
         {
             out.merge(next);
         }

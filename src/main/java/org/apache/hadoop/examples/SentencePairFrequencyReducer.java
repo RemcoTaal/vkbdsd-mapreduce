@@ -2,30 +2,25 @@ package org.apache.hadoop.examples;
 
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.codehaus.jettison.mapped.MappedXMLStreamWriter;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 
 public class SentencePairFrequencyReducer
-        extends Reducer<IntWritable, PairFrequencyWritable, Text, MyMapWritable> {
+        extends Reducer<IntWritable, StringDoubleWritable, Text, MyMapWritable> {
     private IntWritable result = new IntWritable();
 
 
 
-    public void reduce(IntWritable key, Iterable<PairFrequencyWritable> values, Context context
+    public void reduce(IntWritable key, Iterable<StringDoubleWritable> values, Context context
     ) throws IOException, InterruptedException {
         double frequency = 0.0;
         String pair;
 
         MyMapWritable pairFrequencyMap = new MyMapWritable();
 
-        for (PairFrequencyWritable pairFrequency: values){
+        for (StringDoubleWritable pairFrequency: values){
             String[] pairFrequencyArray = pairFrequency.toString().split("\t");
             frequency = Double.parseDouble(pairFrequencyArray[0]);
             pair = pairFrequencyArray[1];
