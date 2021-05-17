@@ -1,4 +1,4 @@
-package org.apache.hadoop.examples;
+package org.apache.hadoop.examples.mappers;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -20,15 +20,13 @@ public class PairFrequencyMapper
         StringTokenizer itr = new StringTokenizer(value.toString());
         while (itr.hasMoreTokens()) {
 
-            //String[] characters = itr.nextToken().split("");
             String word = itr.nextToken().toLowerCase(Locale.ROOT);
             String filteredWord = new String();
             filteredWord = word.replaceAll("[^a-zA-Z ]", "*");
             filteredWord += new String(" ");
 
-            //Bidirectional
             int n = 2;
-            for(int i = 0; i < filteredWord.length() - n + 1; i++){
+            for (int i = 0; i < filteredWord.length() - n + 1; i++) {
 
                 String pair = filteredWord.substring(i, i + n);
                 this.bigram.set(pair);

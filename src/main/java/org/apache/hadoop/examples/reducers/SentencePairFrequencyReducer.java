@@ -1,5 +1,7 @@
-package org.apache.hadoop.examples;
+package org.apache.hadoop.examples.reducers;
 
+import org.apache.hadoop.examples.writables.MyMapWritable;
+import org.apache.hadoop.examples.writables.StringDoubleWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -11,18 +13,14 @@ public class SentencePairFrequencyReducer
         extends Reducer<IntWritable, StringDoubleWritable, Text, MyMapWritable> {
     private IntWritable result = new IntWritable();
 
-
-
     public void reduce(IntWritable key, Iterable<StringDoubleWritable> values, Context context
     ) throws IOException, InterruptedException {
-        double frequency = 0.0;
         String pair;
 
         MyMapWritable pairFrequencyMap = new MyMapWritable();
 
-        for (StringDoubleWritable pairFrequency: values){
+        for (StringDoubleWritable pairFrequency : values) {
             String[] pairFrequencyArray = pairFrequency.toString().split("\t");
-            frequency = Double.parseDouble(pairFrequencyArray[0]);
             pair = pairFrequencyArray[1];
 
             if (!pairFrequencyMap.containsKey(new Text(pair))) {

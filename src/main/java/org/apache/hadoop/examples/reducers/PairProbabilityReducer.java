@@ -1,5 +1,6 @@
-package org.apache.hadoop.examples;
+package org.apache.hadoop.examples.reducers;
 
+import org.apache.hadoop.examples.writables.DoubleDoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
@@ -8,14 +9,12 @@ import java.io.IOException;
 public class PairProbabilityReducer
         extends Reducer<Text, DoubleDoubleWritable, Text, DoubleDoubleWritable> {
 
-
     public void reduce(Text key, Iterable<DoubleDoubleWritable> values,
                        Context context
     ) throws IOException, InterruptedException {
         DoubleDoubleWritable out = new DoubleDoubleWritable();
 
-        for (DoubleDoubleWritable next : values)
-        {
+        for (DoubleDoubleWritable next : values) {
             out.merge(next);
         }
 

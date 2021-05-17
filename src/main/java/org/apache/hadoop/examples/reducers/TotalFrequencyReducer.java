@@ -1,4 +1,4 @@
-package org.apache.hadoop.examples;
+package org.apache.hadoop.examples.reducers;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -6,7 +6,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
 
-class LanguageClassifierReducer
+public class TotalFrequencyReducer
         extends Reducer<Text, IntWritable, Text, IntWritable> {
     private IntWritable result = new IntWritable();
 

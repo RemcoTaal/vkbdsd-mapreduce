@@ -1,4 +1,4 @@
-package org.apache.hadoop.examples;
+package org.apache.hadoop.examples.writables;
 
 import org.apache.hadoop.io.Writable;
 
@@ -7,8 +7,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 public class DoubleDoubleWritable implements Writable {
-    double double1 = 0.0;
-    double double2 = 0.0;
+    public double double1 = 0.0;
+    public double double2 = 0.0;
 
 
     public DoubleDoubleWritable() {

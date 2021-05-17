@@ -1,4 +1,4 @@
-package org.apache.hadoop.examples;
+package org.apache.hadoop.examples.mappers;
 
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class DutchEntropyCalculatorMapper
+public class EnglishEntropyCalculatorMapper
         extends Mapper<Object, Text, Text, DoubleWritable> {
 
     private static HashMap<String, Double> probabilityMap = new HashMap();
@@ -19,7 +19,6 @@ public class DutchEntropyCalculatorMapper
     ) throws IOException, InterruptedException {
 
         double entropyTotal = 0.0;
-
 
         if (context.getInputSplit().toString().contains("Probability")) {
             String[] probabilityArray = value.toString().split("\t");
@@ -46,7 +45,7 @@ public class DutchEntropyCalculatorMapper
         }
 
 
-        if (probabilityMap.size() == 641){
+        if (probabilityMap.size() == 418) {
             for (Map.Entry<String, HashMap<String, Double>> entry : unclassifiedMap.entrySet()) {
                 for (Map.Entry<String, Double> hashmapEntry : entry.getValue().entrySet()) {
 
@@ -58,14 +57,11 @@ public class DutchEntropyCalculatorMapper
                     }
                 }
 
-
                 context.write(new Text(entry.getKey()), new DoubleWritable(entropyTotal));
                 entropyTotal = 0;
 
-
             }
         }
-
 
     }
 }

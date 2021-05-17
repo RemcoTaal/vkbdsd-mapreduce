@@ -1,11 +1,11 @@
-package org.apache.hadoop.examples;
+package org.apache.hadoop.examples.writables;
 
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Writable;
 
 import java.util.Set;
 
-class MyMapWritable extends MapWritable {
+public class MyMapWritable extends MapWritable {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();

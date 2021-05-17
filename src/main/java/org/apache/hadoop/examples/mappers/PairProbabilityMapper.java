@@ -1,7 +1,9 @@
-package org.apache.hadoop.examples;
+package org.apache.hadoop.examples.mappers;
 
+import org.apache.hadoop.examples.writables.DoubleDoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -12,11 +14,10 @@ public class PairProbabilityMapper
     private static HashMap<String, Double> totalMap = new HashMap();
     private static HashMap<String, Double> frequencyMap = new HashMap();
 
-    public static void clearMaps(){
+    public static void clearMaps() {
         totalMap.clear();
         frequencyMap.clear();
     }
-
 
     public void map(Object key, Text value, Context context
     ) throws IOException, InterruptedException {
@@ -48,7 +49,6 @@ public class PairProbabilityMapper
             }
 
         });
-
-
+        
     }
 }

@@ -1,11 +1,11 @@
-package org.apache.hadoop.examples;
+package org.apache.hadoop.examples.mappers;
 
+import org.apache.hadoop.examples.writables.StringDoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import java.io.IOException;
-
 import java.util.Locale;
 import java.util.StringTokenizer;
 
@@ -25,7 +25,6 @@ public class SentencePairFrequencyMapper
             filteredSentence = sentence.replaceAll("[^a-zA-Z ]", "*");
             filteredSentence += new String(" ");
 
-            //Bidirectional
             int n = 2;
             for(int i = 0; i < filteredSentence.length() - n + 1; i++){
 

@@ -1,12 +1,11 @@
-package org.apache.hadoop.examples;
+package org.apache.hadoop.examples.mappers;
 
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.examples.writables.DoubleDoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
 
 
 public class CombineEntropyMapper
@@ -18,8 +17,6 @@ public class CombineEntropyMapper
     public void map(Object key, Text value, Context context
     ) throws IOException, InterruptedException {
 
-        // DoubleWritable double1 = Dutch
-        // DoubleWritable double2 = English
 
         if (context.getInputSplit().toString().contains("Dutch")) {
 
@@ -28,7 +25,7 @@ public class CombineEntropyMapper
             Double entropy = Double.parseDouble(pairEntropyArray[1]);
             totalMap.put(pair, new DoubleDoubleWritable(entropy, 0.0));
 
-            if(totalMap.containsKey(pair)){
+            if (totalMap.containsKey(pair)) {
                 DoubleDoubleWritable doubleWritable = totalMap.get(pair);
                 totalMap.put(pair, new DoubleDoubleWritable(entropy, doubleWritable.double2));
                 context.write(new Text(pair), totalMap.get(pair));
@@ -44,7 +41,7 @@ public class CombineEntropyMapper
             Double entropy = Double.parseDouble(pairEntropyArray[1]);
 
 
-            if(totalMap.containsKey(pair)){
+            if (totalMap.containsKey(pair)) {
                 DoubleDoubleWritable doubleWritable = totalMap.get(pair);
                 totalMap.put(pair, new DoubleDoubleWritable(doubleWritable.double1, entropy));
                 context.write(new Text(pair), totalMap.get(pair));
@@ -52,7 +49,6 @@ public class CombineEntropyMapper
                 totalMap.put(pair, new DoubleDoubleWritable(0.0, entropy));
             }
         }
-
 
     }
 }
